@@ -1,1 +1,1328 @@
 # DSAL-PR-codes
+######################################## Data Structures and Algorithms Laboratory (DSAL) ########################################
+/**
+1. Consider a telephone book database with N clients. Implement a hash table to quickly look up a client's telephone number, using two collision handling techniques and compare them based on the number of comparisons required to find a set of telephone numbers. (Telephone Book Database) 
+CODE:
+**/
+########################################
+class HashTable:
+    def __init__(self, size):
+        self.size = size
+        self.table = [[] for _ in range(size)]
+
+    def hash_function(self, key):
+        return hash(key) % self.size
+
+    def insert_chaining(self, key, value):
+        index = self.hash_function(key)
+        for pair in self.table[index]:
+            if pair[0] == key:
+                pair[1] = value
+                return
+        self.table[index].append([key, value])
+
+    def lookup_chaining(self, key):
+        index = self.hash_function(key)
+        for pair in self.table[index]:
+            if pair[0] == key:
+                return pair[1]
+        return None
+
+    def insert_open_addressing(self, key, value):
+        index = self.hash_function(key)
+        while True:
+            if not self.table[index]:
+                self.table[index] = [key, value]
+                return
+            if self.table[index][0] == key:
+                self.table[index][1] = value
+                return
+            index = (index + 1) % self.size
+
+    def lookup_open_addressing(self, key):
+        index = self.hash_function(key)
+        while True:
+            if not self.table[index]:
+                return None
+            if self.table[index][0] == key:
+                return self.table[index][1]
+            index = (index + 1) % self.size
+
+hash_table = HashTable(10)
+hash_table.insert_chaining("John", "1234567890")
+hash_table.insert_chaining("Alice", "9876543210")
+print(hash_table.lookup_chaining("John"))
+print(hash_table.lookup_chaining("Alice"))
+hash_table.insert_open_addressing("Bob", "5555555555")
+hash_table.insert_open_addressing("Charlie", "6666666666")
+print(hash_table.lookup_open_addressing("Bob"))
+print(hash_table.lookup_open_addressing("Charlie"))
+
+########################################
+/**
+2. Implement a dictionary using hashing, handling collisions with chaining (with and without replacement). The dictionary should have standard operations like Insert, Find, and Delete, where keys are unique and comparable.
+(Hash Table Implementation)
+CODE:
+**/
+########################################
+class Node:
+    def __init__(self, key, value):
+        self.key = key
+        self.value = value
+        self.next = None
+
+class HashTable:
+    def __init__(self, size, replace=False):
+        self.size = size
+        self.table = [None] * size
+        self.replace = replace
+
+    def hash_function(self, key):
+        return hash(key) % self.size
+
+    def insert(self, key, value):
+        index = self.hash_function(key)
+        if self.table[index] is None:
+            self.table[index] = Node(key, value)
+        else:
+            node = self.table[index]
+            while node.next is not None:
+                if node.key == key:
+                    if self.replace:
+                        node.value = value
+                        return
+                node = node.next
+            if node.key == key:
+                if self.replace:
+                    node.value = value
+            else:
+                node.next = Node(key, value)
+
+    def find(self, key):
+        index = self.hash_function(key)
+        node = self.table[index]
+        while node is not None:
+            if node.key == key:
+                return node.value
+            node = node.next
+        return None
+
+    def delete(self, key):
+        index = self.hash_function(key)
+        node = self.table[index]
+        prev = None
+        while node is not None:
+            if node.key == key:
+                if prev is None:
+                    self.table[index] = node.next
+                else:
+                    prev.next = node.next
+                return
+            prev = node
+            node = node.next
+
+    def display(self):
+        for index, node in enumerate(self.table):
+            print(f"Index {index}: ", end="")
+            while node is not None:
+                print(f"({node.key}, {node.value}) -> ", end="")
+                node = node.next
+            print("None")
+
+hash_table = HashTable(10, replace=True)
+hash_table.insert("apple", 5)
+hash_table.insert("banana", 7)
+hash_table.insert("orange", 3)
+hash_table.insert("apple", 10)
+hash_table.display()
+print(hash_table.find("apple"))
+hash_table.delete("banana")
+hash_table.display()
+hash_table_without_replacement = HashTable(10, replace=False)
+hash_table_without_replacement.insert("apple", 5)
+hash_table_without_replacement.insert("banana", 7)
+hash_table_without_replacement.insert("orange", 3)
+hash_table_without_replacement.insert("apple", 10)
+hash_table_without_replacement.display()
+print(hash_table_without_replacement.find("apple"))
+hash_table_without_replacement.delete("banana")
+hash_table_without_replacement.display()
+#################################################
+
+/**
+3. Construct a tree to represent a book with chapters, sections, and subsections. Print the nodes and analyze the time and space requirements of the method.
+(Tree Construction Method)
+CODE:
+**/
+########################################
+#include <iostream>
+#include <vector>
+#include <string>
+
+using namespace std;
+
+class Node {
+public:
+string title;
+string content;
+vector<Node*> children;
+
+Node(string t, string c = "") : title(t), content(c) {}
+
+void addChild(Node* node) {
+children.push_back(node);
+}
+
+void printNode(int level = 0) {
+cout << string(level * 2, ' ') << title << endl;
+if (!content.empty()) {
+cout << string((level + 1) * 2, ' ') << content << endl;
+}
+for (Node* child : children) {
+child->printNode(level + 1);
+}
+}
+};
+
+class Book {
+public:
+Node* root;
+
+Book(string title) {
+root = new Node(title);
+}
+
+Node* addChapter(string chapterTitle, string content = "") {
+Node* chapter = new Node(chapterTitle, content);
+root->addChild(chapter);
+return chapter;
+}
+
+Node* addSection(Node* parent, string sectionTitle, string content = "") {
+Node* section = new Node(sectionTitle, content);
+parent->addChild(section);
+return section;
+}
+
+Node* addSubsection(Node* parent, string subsectionTitle, string content = "") {
+Node* subsection = new Node(subsectionTitle, content);
+parent->addChild(subsection);
+return subsection;
+}
+
+void printBook() {
+root->printNode();
+}
+
+~Book() {
+delete root;
+}
+};
+
+int main() {
+Book book("Introduction to Programming");
+Node* chapter1 = book.addChapter("Chapter 1: Introduction");
+Node* section1_1 = book.addSection(chapter1, "Section 1.1: What is Programming?");
+book.addSubsection(section1_1, "Subsection 1.1.1: Definition of Programming");
+book.addSubsection(section1_1, "Subsection 1.1.2: Importance of Programming");
+
+Node* chapter2 = book.addChapter("Chapter 2: Data Types");
+Node* section2_1 = book.addSection(chapter2, "Section 2.1: Primitive Data Types");
+book.addSubsection(section2_1, "Subsection 2.1.1: Integers");
+book.addSubsection(section2_1, "Subsection 2.1.2: Floating Point Numbers");
+book.printBook();
+
+return 0;
+}
+########################################
+
+
+/**
+4. Create a binary search tree from an empty tree by inserting values in a given order. Then, perform operations like inserting a new node, finding the number of nodes in the longest path, finding the minimum data value, swapping left and right pointers, and searching for a value.
+(Binary Search Tree)
+CODE:
+**/
+########################################
+#include <iostream>
+using namespace std;
+
+struct Node {
+int data;
+Node* left;
+Node* right;
+
+Node(int value) {
+data = value;
+left = right = nullptr;
+}
+};
+
+class BinarySearchTree {
+public:
+Node* root;
+
+BinarySearchTree() {
+root = nullptr;
+}
+
+void insert(int data) {
+if (root == nullptr) {
+root = new Node(data);
+} else {
+insert(root, data);
+}
+}
+
+void insert(Node* node, int data) {
+if (data < node->data) {
+if (node->left == nullptr) {
+node->left = new Node(data);
+} else {
+insert(node->left, data);
+}
+} else {
+if (node->right == nullptr) {
+node->right = new Node(data);
+} else {
+insert(node->right, data);
+}
+}
+}
+
+int findLongestPath() {
+return findLongestPath(root);
+}
+
+int findLongestPath(Node* node) {
+if (node == nullptr) {
+return 0;
+} else {
+int leftHeight = findLongestPath(node->left);
+int rightHeight = findLongestPath(node->right);
+return max(leftHeight, rightHeight) + 1;
+}
+}
+
+int findMin() {
+return findMin(root);
+}
+
+int findMin(Node* node) {
+if (node->left == nullptr) {
+return node->data;
+}
+return findMin(node->left);
+}
+
+void swapPointers() {
+swapPointers(root);
+}
+
+void swapPointers(Node* node) {
+if (node == nullptr) {
+return;
+}
+swap(node->left, node->right);
+swapPointers(node->left);
+swapPointers(node->right);
+}
+
+bool search(int data) {
+return search(root, data);
+}
+
+bool search(Node* node, int data) {
+if (node == nullptr) {
+return false;
+}
+if (node->data == data) {
+return true;
+} else if (data < node->data) {
+return search(node->left, data);
+} else {
+return search(node->right, data);
+}
+}
+
+void printTree(string traversalType) {
+if (traversalType == "preorder") {
+preorder(root);
+} else if (traversalType == "inorder") {
+inorder(root);
+} else if (traversalType == "postorder") {
+postorder(root);
+}
+}
+
+void preorder(Node* node) {
+if (node) {
+cout << node->data << " ";
+preorder(node->left);
+preorder(node->right);
+}
+}
+
+void inorder(Node* node) {
+if (node) {
+inorder(node->left);
+cout << node->data << " ";
+inorder(node->right);
+}
+}
+
+void postorder(Node* node) {
+if (node) {
+postorder(node->left);
+postorder(node->right);
+cout << node->data << " ";
+}
+}
+};
+
+int main() {
+BinarySearchTree bst;
+int values[] = {8, 3, 10, 1, 6, 14, 4, 7, 13};
+for (int value : values) {
+bst.insert(value);
+}
+
+cout << "Preorder traversal: ";
+bst.printTree("preorder");
+cout << endl;
+
+cout << "Inorder traversal: ";
+bst.printTree("inorder");
+cout << endl;
+
+cout << "Postorder traversal: ";
+bst.printTree("postorder");
+cout << endl;
+
+cout << "Longest path length: " << bst.findLongestPath() << endl;
+cout << "Minimum data value: " << bst.findMin() << endl;
+
+bst.swapPointers();
+cout << "Preorder traversal after swapping pointers: ";
+bst.printTree("preorder");
+cout << endl;
+
+cout << "Searching for value 10: " << (bst.search(10) ? "Found" : "Not Found") << endl;
+cout << "Searching for value 15: " << (bst.search(15) ? "Found" : "Not Found") << endl;
+
+return 0;
+}
+########################################
+
+/**
+5. Construct an expression tree from a given prefix expression and traverse it using post order traversal (non-recursive). Then, delete the entire tree.
+(Expression Tree Construction)
+CODE:
+**/
+########################################
+#include <iostream>
+#include <stack>
+#include <string>
+using namespace std;
+
+struct Node {
+char data;
+Node* left;
+Node* right;
+
+Node(char value) {
+data = value;
+left = right = nullptr;
+}
+};
+
+class ExpressionTree {
+public:
+Node* root;
+
+ExpressionTree() {
+root = nullptr;
+}
+
+void constructTree(const string& prefixExpression) {
+stack<Node*> st;
+for (int i = prefixExpression.size() - 1; i >= 0; --i) {
+char ch = prefixExpression[i];
+
+if (ch == '+' || ch == '-' || ch == '*' || ch == '/') {
+Node* node = new Node(ch);
+node->left = st.top(); st.pop();
+node->right = st.top(); st.pop();
+st.push(node);
+} else {
+Node* node = new Node(ch);
+st.push(node);
+}
+}
+root = st.top();
+}
+
+void postOrderTraversal() {
+stack<Node*> stack1, stack2;
+if (root) {
+stack1.push(root);
+while (!stack1.empty()) {
+Node* node = stack1.top();
+stack1.pop();
+stack2.push(node);
+
+if (node->left) stack1.push(node->left);
+if (node->right) stack1.push(node->right);
+}
+
+while (!stack2.empty()) {
+Node* node = stack2.top();
+stack2.pop();
+cout << node->data << " ";
+}
+}
+}
+
+void deleteTree() {
+deleteTree(root);
+}
+
+private:
+void deleteTree(Node* node) {
+if (node == nullptr) return;
+deleteTree(node->left);
+deleteTree(node->right);
+delete node;
+}
+};
+
+int main() {
+ExpressionTree expressionTree;
+string prefixExpression = "+A*BC";
+cout << "Prefix expression: " << prefixExpression << endl;
+
+expressionTree.constructTree(prefixExpression);
+
+cout << "Post-order traversal: ";
+expressionTree.postOrderTraversal();
+
+expressionTree.deleteTree();
+
+return 0;
+}
+########################################
+
+/**
+6. Represent a graph using adjacency matrix/list to perform Depth-First Search (DFS) and adjacency list to perform Breadth-First Search (BFS). Use a map of the area around a college as the graph, identifying prominent landmarks as nodes.
+(Graph Representation Algorithm)
+CODE:
+**/
+########################################
+#include <iostream>
+#include <unordered_map>
+#include <list>
+#include <queue>
+#include <set>
+using namespace std;
+
+class Graph {
+public:
+unordered_map<string, list<string>> adjacencyList;
+
+void addNode(const string& node) {
+adjacencyList[node] = list<string>();
+}
+
+void addEdge(const string& node1, const string& node2) {
+adjacencyList[node1].push_back(node2);
+adjacencyList[node2].push_back(node1);
+}
+
+void dfs(const string& startNode) {
+set<string> visited;
+dfsHelper(startNode, visited);
+}
+
+void bfs(const string& startNode) {
+set<string> visited;
+queue<string> q;
+visited.insert(startNode);
+q.push(startNode);
+
+while (!q.empty()) {
+string node = q.front();
+q.pop();
+cout << node << " ";
+
+for (const string& neighbor : adjacencyList[node]) {
+if (visited.find(neighbor) == visited.end()) {
+visited.insert(neighbor);
+q.push(neighbor);
+}
+}
+}
+}
+
+private:
+void dfsHelper(const string& node, set<string>& visited) {
+visited.insert(node);
+cout << node << " ";
+for (const string& neighbor : adjacencyList[node]) {
+if (visited.find(neighbor) == visited.end()) {
+dfsHelper(neighbor, visited);
+}
+}
+}
+};
+
+int main() {
+Graph graph;
+
+graph.addNode("A");
+graph.addNode("B");
+graph.addNode("C");
+graph.addNode("D");
+graph.addNode("E");
+
+graph.addEdge("A", "B");
+graph.addEdge("A", "C");
+graph.addEdge("B", "D");
+graph.addEdge("C", "E");
+
+cout << "DFS Traversal: ";
+graph.dfs("A");
+cout << endl;
+
+cout << "BFS Traversal: ";
+graph.bfs("A");
+cout << endl;
+
+return 0;
+}
+########################################
+
+/**
+7. Represent a graph of flight paths between cities, where the cost of an edge is the time or fuel used for the journey. Use adjacency list or matrix representation and check if the graph is connected. Justify the storage representation used.
+(Flight Path Graph)
+CODE:
+**/
+########################################
+#include <iostream>
+#include <unordered_map>
+#include <unordered_set>
+#include <string>
+
+using namespace std;
+
+class Graph {
+public:
+void addCity(const string& city) {
+adjacencyList[city];
+}
+
+void addFlightPath(const string& city1, const string& city2, int cost) {
+if (adjacencyList.count(city1) && adjacencyList.count(city2)) {
+adjacencyList[city1][city2] = cost;
+adjacencyList[city2][city1] = cost;
+}
+}
+
+bool isConnected() {
+unordered_set<string> visited;
+dfsHelper("New York", visited);
+return visited.size() == adjacencyList.size();
+}
+
+void printGraph() {
+for (const auto& pair : adjacencyList) {
+cout << pair.first << ": ";
+for (const auto& neighbor : pair.second) {
+cout << neighbor.first << "(" << neighbor.second << ") ";
+}
+cout << endl;
+}
+}
+
+private:
+unordered_map<string, unordered_map<string, int>> adjacencyList;
+
+void dfsHelper(const string& city, unordered_set<string>& visited) {
+visited.insert(city);
+for (const auto& neighbor : adjacencyList[city]) {
+if (visited.find(neighbor.first) == visited.end()) {
+dfsHelper(neighbor.first, visited);
+}
+}
+}
+};
+
+int main() {
+Graph graph;
+
+graph.addCity("New York");
+graph.addCity("Los Angeles");
+graph.addCity("Chicago");
+graph.addCity("Houston");
+graph.addCity("Seattle");
+
+graph.addFlightPath("New York", "Los Angeles", 5);
+graph.addFlightPath("New York", "Chicago", 2);
+graph.addFlightPath("Los Angeles", "Seattle", 2);
+graph.addFlightPath("Chicago", "Houston", 3);
+graph.addFlightPath("Houston", "Seattle", 4);
+
+cout << "Flight Path Graph:" << endl;
+graph.printGraph();
+
+cout << "\nIs the graph connected? " << (graph.isConnected() ? "Yes" : "No") << endl;
+
+return 0;
+}
+########################################
+
+/**
+8. Given a sequence of sorted keys with search probabilities, build a binary search tree with the least search cost. Consider the access probability for each key.
+(Binary Search Optimization)
+CODE:
+**/
+########################################
+#include <iostream>
+#include <vector>
+#include <limits>
+#include <numeric>
+
+using namespace std;
+
+class Node {
+public:
+int key;
+double probability;
+Node* left;
+Node* right;
+
+Node(int k, double p) : key(k), probability(p), left(nullptr), right(nullptr) {}
+};
+
+Node* optimal_bst(const vector<int>& keys, const vector<double>& probabilities) {
+int n = keys.size();
+vector<vector<double>> cost(n, vector<double>(n, 0));
+vector<vector<Node*>> root(n, vector<Node*>(n, nullptr));
+
+for (int i = 0; i < n; ++i) {
+cost[i][i] = probabilities[i];
+root[i][i] = new Node(keys[i], probabilities[i]);
+}
+for (int length = 2; length <= n; ++length) {
+for (int i = 0; i <= n - length; ++i) {
+int j = i + length - 1;
+double min_cost = numeric_limits<double>::infinity();
+for (int r = i; r <= j; ++r) {
+double left_cost = (r == i) ? 0 : cost[i][r - 1];
+double right_cost = (r == j) ? 0 : cost[r + 1][j];
+double total_cost = left_cost + right_cost + accumulate(probabilities.begin() + i, probabilities.begin() + j + 1, 0.0);
+
+if (total_cost < min_cost) {
+min_cost = total_cost;
+root[i][j] = new Node(keys[r], accumulate(probabilities.begin() + i, probabilities.begin() + j + 1, 0.0));
+root[i][j]->left = (r > i) ? root[i][r - 1] : nullptr;
+root[i][j]->right = (r < j) ? root[r + 1][j] : nullptr;
+}
+}
+cost[i][j] = min_cost;
+}
+}
+
+return root[0][n - 1];
+}
+
+void print_bst(Node* node, int level = 0) {
+if (node != nullptr) {
+print_bst(node->right, level + 1);
+cout << string(4 * level, ' ') << "-> " << node->key << " (" << node->probability << ")" << endl;
+print_bst(node->left, level + 1);
+}
+}
+
+int main() {
+vector<int> keys = {10, 20, 30, 40, 50};
+vector<double> probabilities = {0.1, 0.2, 0.3, 0.2, 0.2};
+
+Node* root = optimal_bst(keys, probabilities);
+print_bst(root);
+
+return 0;
+}
+########################################
+/**
+9. Create a dictionary that stores keywords and their meanings. Provide facilities for adding, deleting, and updating entries, as well as displaying the data in sorted order. Use a height-balanced tree and analyze the complexity of finding a keyword.
+(Dictionary Management System)
+CODE:
+**/
+########################################
+#include <iostream>
+#include <string>
+#include <algorithm>
+using namespace std;
+struct Node {
+string keyword;
+string meaning;
+Node* left;
+Node* right;
+int height;
+
+Node(string key, string mean) : keyword(key), meaning(mean), left(nullptr), right(nullptr), height(1) {}
+};
+
+class AVLTree {
+private:
+Node* root;
+
+int height(Node* node) {
+return (node == nullptr) ? 0 : node->height;
+}
+
+int getBalance(Node* node) {
+return (node == nullptr) ? 0 : height(node->left) - height(node->right);
+}
+Node* rightRotate(Node* y) {
+Node* x = y->left;
+Node* T2 = x->right;
+
+x->right = y;
+y->left = T2;
+
+y->height = max(height(y->left), height(y->right)) + 1;
+x->height = max(height(x->left), height(x->right)) + 1;
+
+return x;
+}
+
+Node* leftRotate(Node* x) {
+Node* y = x->right;
+Node* T2 = y->left;
+
+y->left = x;
+x->right = T2;
+
+x->height = max(height(x->left), height(x->right)) + 1;
+y->height = max(height(y->left), height(y->right)) + 1;
+
+return y;
+}
+
+Node* insert(Node* node, string keyword, string meaning) {
+if (node == nullptr)
+return new Node(keyword, meaning);
+
+if (keyword < node->keyword)
+node->left = insert(node->left, keyword, meaning);
+else if (keyword > node->keyword)
+node->right = insert(node->right, keyword, meaning);
+else
+return node; 
+
+node->height = 1 + max(height(node->left), height(node->right));
+int balance = getBalance(node);
+
+if (balance > 1 && keyword < node->left->keyword)
+return rightRotate(node);
+
+
+if (balance < -1 && keyword > node->right->keyword)
+return leftRotate(node);
+
+
+if (balance > 1 && keyword > node->left->keyword) {
+node->left = leftRotate(node->left);
+return rightRotate(node);
+}
+
+if (balance < -1 && keyword < node->right->keyword) {
+node->right = rightRotate(node->right);
+return leftRotate(node);
+}
+
+return node;
+}
+Node* deleteNode(Node* root, string keyword) {
+if (root == nullptr)
+return root;
+
+if (keyword < root->keyword)
+root->left = deleteNode(root->left, keyword);
+else if (keyword > root->keyword)
+root->right = deleteNode(root->right, keyword);
+else {
+if (root->left == nullptr || root->right == nullptr) {
+Node* temp = root->left ? root->left : root->right;
+if (temp == nullptr) {
+temp = root;
+root = nullptr;
+} else {
+*root = *temp;
+}
+delete temp;
+} else {
+Node* temp = minValueNode(root->right);
+root->keyword = temp->keyword;
+root->meaning = temp->meaning;
+root->right = deleteNode(root->right, temp->keyword);
+}
+}
+
+if (root == nullptr)
+return root;
+
+root->height = 1 + max(height(root->left), height(root->right));
+
+int balance = getBalance(root);
+
+if (balance > 1 && getBalance(root->left) >= 0)
+return rightRotate(root);
+if (balance > 1 && getBalance(root->left) < 0) {
+root->left = leftRotate(root->left);
+return rightRotate(root);
+}
+if (balance < -1 && getBalance(root->right) <= 0)
+return leftRotate(root);
+if (balance < -1 && getBalance(root->right) > 0) {
+root->right = rightRotate(root->right);
+return leftRotate(root);
+}
+
+return root;
+}
+Node* minValueNode(Node* node) {
+Node* current = node;
+while (current->left != nullptr)
+current = current->left;
+return current;
+}
+
+void inOrder(Node* root) {
+if (root != nullptr) {
+inOrder(root->left);
+cout << root->keyword << ": " << root->meaning << endl;
+inOrder(root->right);
+}
+}
+
+Node* search(Node* root, string keyword) {
+if (root == nullptr || root->keyword == keyword)
+return root;
+
+if (keyword < root->keyword)
+return search(root->left, keyword);
+else
+return search(root->right, keyword);
+}
+
+public:
+AVLTree() : root(nullptr) {}
+void insertEntry(string keyword, string meaning) {
+root = insert(root, keyword, meaning);
+}
+
+void deleteEntry(string keyword) {
+root = deleteNode(root, keyword);
+}
+void searchKeyword(string keyword) {
+Node* result = search(root, keyword);
+if (result) {
+cout << "Found: " << result->keyword << ": " << result->meaning << endl;
+} else {
+cout << "Keyword not found!" << endl;
+}
+}
+
+
+void updateEntry(string keyword, string newMeaning) {
+Node* result = search(root, keyword);
+if (result) {
+result->meaning = newMeaning;
+cout << "Updated: " << result->keyword << ": " << result->meaning << endl;
+} else {
+cout << "Keyword not found!" << endl;
+}
+}
+void displayDictionary() {
+cout << "Dictionary Entries (Sorted Order):" << endl;
+inOrder(root);
+}
+};
+int main() {
+AVLTree dictionary;
+
+dictionary.insertEntry("Algorithm", "A step-by-step procedure for solving a problem.");
+dictionary.insertEntry("Binary Search", "An efficient algorithm for finding an item from a sorted list of items.");
+dictionary.insertEntry("Data Structure", "A particular way of organizing and storing data.");
+
+cout << "Initial Dictionary:" << endl;
+dictionary.displayDictionary();
+
+cout << "\nSearching for 'Algorithm':" << endl;
+dictionary.searchKeyword("Algorithm");
+
+cout << "\nUpdating 'Binary Search':" << endl;
+dictionary.updateEntry("Binary Search", "A search algorithm that finds the position of a target value.");
+
+cout << "\nDeleting 'Data Structure':" << endl;
+dictionary.deleteEntry("Data Structure");
+
+cout << "\nUpdated Dictionary:" << endl;
+dictionary.displayDictionary();
+
+return 0;
+}
+########################################
+/**
+10. Read the marks obtained by students in an online examination and find the maximum and minimum marks using a heap data structure. Analyze the algorithm.
+(Marks Sorting Algorithm)
+CODE:
+**/
+########################################
+#include <iostream>
+#include <queue>
+#include <vector>
+using namespace std;
+void find_max_min_marks(vector<int>& marks) {
+priority_queue<int> max_heap;
+for (int mark : marks) {
+max_heap.push(mark);
+}
+int max_marks = max_heap.top();
+cout << "Maximum marks: " << max_marks << endl;
+priority_queue<int, vector<int>, greater<int>> min_heap;
+for (int mark : marks) {
+min_heap.push(mark);
+}
+int min_marks = min_heap.top();
+cout << "Minimum marks: " << min_marks << endl;
+}
+
+int main() {
+int n;
+cout << "Enter the number of students: ";
+cin >> n;
+
+vector<int> marks(n);
+cout << "Enter the marks obtained by each student: ";
+for (int i = 0; i < n; i++) {
+cin >> marks[i];
+}
+find_max_min_marks(marks);
+return 0;
+}
+########################################
+
+/**
+11. Maintain a student information system using a sequential file, allowing users to add, delete, and display information. Handle cases where a student's record does not exist.
+(Student Information System)
+**/
+
+########################################
+#include <iostream>
+#include <fstream>
+#include <sstream>
+#include <string>
+#include <vector>
+#include <cstdlib>
+using namespace std;
+struct Student {
+int rollNo;
+string name;
+string division;
+string address;
+};
+string studentToString(const Student &s) {
+ostringstream oss;
+oss << s.rollNo << " " << s.name << " " << s.division << " " << s.address;
+return oss.str();
+}
+bool stringToStudent(const string &str, Student &s) {
+istringstream iss(str);
+if (!(iss >> s.rollNo >> s.name >> s.division >> s.address)) {
+return false;
+}
+return true;
+}
+void addStudent(const string &filename) {
+Student s;
+cout << "Enter Roll Number: ";
+cin >> s.rollNo;
+cout << "Enter Name (no spaces, or use underscore _ for spaces): ";
+cin >> s.name;
+cout << "Enter Division: ";
+cin >> s.division;
+cout << "Enter Address (no spaces, or use underscore _ for spaces): ";
+cin >> s.address;
+ofstream ofs(filename, ios::app);
+if (!ofs) {
+cerr << "Error opening file for writing." << endl;
+return;
+}
+ofs << studentToString(s) << "\n";
+ofs.close();
+cout << "Student added successfully." << endl;
+}
+void displayStudent(const string &filename) {
+int roll;
+cout << "Enter Roll Number of student to display: ";
+cin >> roll;
+ifstream ifs(filename);
+if (!ifs) {
+cerr << "Error opening file for reading." << endl;
+return;
+}
+bool found = false;
+string line;
+while (getline(ifs, line)) {
+Student s;
+if(stringToStudent(line, s) && s.rollNo == roll) {
+cout << "Student Details:" << endl;
+cout << "Roll Number: " << s.rollNo << "\nName: " << s.name 
+<< "\nDivision: " << s.division << "\nAddress: " << s.address << endl;
+found = true;
+break;
+}
+}
+ifs.close();
+if (!found) {
+cout << "Student with roll number " << roll << " does not exist." << endl;
+}
+}
+void deleteStudent(const string &filename) {
+int roll;
+cout << "Enter Roll Number of student to delete: ";
+cin >> roll;
+ifstream ifs(filename);
+if (!ifs) {
+cerr << "Error opening file for reading." << endl;
+return;
+}
+vector<string> records;
+bool found = false;
+string line;
+while(getline(ifs, line)){
+Student s;
+if (stringToStudent(line, s)) {
+if(s.rollNo == roll) {
+found = true;
+continue;
+}
+}
+records.push_back(line);
+}
+ifs.close();
+if (!found) {
+cout << "Student with roll number " << roll << " does not exist." << endl;
+return;
+}
+ofstream ofs(filename);
+if(!ofs) {
+cerr << "Error opening file for writing." << endl;
+return;
+}
+for(const auto& rec : records) {
+ofs << rec << "\n";
+}
+ofs.close();
+cout << "Student record deleted successfully." << endl;
+}
+int main() {
+const string filename = "student.txt";
+int choice;
+
+do {
+cout << "\n--- Student Information System ---" << endl;
+cout << "1. Add Student" << endl;
+cout << "2. Delete Student" << endl;
+cout << "3. Display Student" << endl;
+cout << "4. Exit" << endl;
+cout << "Enter your choice: ";
+cin >> choice;
+switch(choice) {
+case 1:
+addStudent(filename);
+break;
+case 2:
+deleteStudent(filename);
+break;
+case 3:
+displayStudent(filename);
+break;
+case 4:
+cout << "Exiting program." << endl;
+break;
+default:
+cout << "Invalid choice. Please try again." << endl;
+}
+} while(choice != 4);
+return 0;
+}
+########################################
+
+/**
+12. Maintain an employee information system using an index sequential file, allowing users to add, delete, and display information. Handle cases where an employee's record does not exist.
+(Employee Data Management)
+CODE:
+**/
+########################################
+#include <iostream>
+#include <fstream>
+#include <sstream>
+#include <unordered_map>
+#include <string>
+using namespace std;
+struct Employee {
+int empID;
+string name;
+string designation;
+double salary;
+bool isDeleted;
+};
+const string dataFilename = "employee.txt";
+unordered_map<int, Employee> employeeMap;
+void loadEmployees();
+void saveEmployees();
+void addEmployee();
+void deleteEmployee();
+void displayEmployee();
+int main() {
+loadEmployees();
+int choice;
+do {
+cout << "\n--- Employee Information System ---" << endl;
+cout << "1. Add Employee" << endl;
+cout << "2. Delete Employee" << endl;
+cout << "3. Display Employee" << endl;
+cout << "4. Exit" << endl;
+cout << "Enter your choice: ";
+cin >> choice;
+cin.ignore();
+switch(choice) {
+case 1:
+addEmployee();
+break;
+case 2:
+deleteEmployee();
+break;
+case 3:
+displayEmployee();
+break;
+case 4:
+cout << "Exiting program." << endl;
+break;
+default:
+cout << "Invalid choice. Please try again." << endl;
+}
+} while(choice != 4);
+
+return 0;
+}
+void loadEmployees() {
+employeeMap.clear();
+ifstream fin(dataFilename);
+if (!fin) {
+return;
+}
+string line;
+while(getline(fin, line)) {
+if(line.empty())
+continue;
+stringstream ss(line);
+string token;
+Employee emp;
+if (!getline(ss, token, ',')) continue;
+try {
+emp.empID = stoi(token);
+} catch (const invalid_argument &e) {
+cerr << "Invalid integer value (empID): " << token << endl;
+continue;
+}
+if (!getline(ss, token, ',')) continue;
+emp.name = token;
+if (!getline(ss, token, ',')) continue;
+emp.designation = token;
+if (!getline(ss, token, ',')) continue;
+try {
+emp.salary = stod(token);
+} catch (const invalid_argument &e) {
+cerr << "Invalid numeric value (salary): " << token << endl;
+continue;
+}
+if (!getline(ss, token, ',')) continue;
+emp.isDeleted = (token == "1" || token == "true");
+if (!emp.isDeleted)
+employeeMap[emp.empID] = emp;
+}
+fin.close();
+}
+void saveEmployees() {
+ofstream fout(dataFilename, ios::trunc);
+if (!fout) {
+cerr << "Error opening file for writing." << endl;
+return;
+}
+for (const auto &pair : employeeMap) {
+const Employee &emp = pair.second;
+fout << emp.empID << ","
+<< emp.name << ","
+<< emp.designation << ","
+<< emp.salary << ","
+<< (emp.isDeleted ? "1" : "0") << "\n";
+}
+fout.close();
+}
+void addEmployee() {
+Employee emp;
+emp.isDeleted = false;
+cout << "Enter Employee ID: ";
+cin >> emp.empID;
+cin.ignore();
+if (employeeMap.find(emp.empID) != employeeMap.end()) {
+cout << "Employee with ID " << emp.empID << " already exists." << endl;
+return;
+}
+cout << "Enter Name: ";
+getline(cin, emp.name);
+cout << "Enter Designation: ";
+getline(cin, emp.designation);
+cout << "Enter Salary: ";
+cin >> emp.salary;
+employeeMap[emp.empID] = emp;
+saveEmployees();
+cout << "Employee added successfully." << endl;
+}
+void deleteEmployee() {
+int id;
+cout << "Enter Employee ID to delete: ";
+cin >> id;
+cin.ignore();
+auto it = employeeMap.find(id);
+if (it == employeeMap.end()) {
+cout << "Employee with ID " << id << " does not exist." << endl;
+return;
+}
+it->second.isDeleted = true;
+employeeMap.erase(it);
+saveEmployees();
+cout << "Employee with ID " << id << " deleted successfully." << endl;
+}
+void displayEmployee() {
+int id;
+cout << "Enter Employee ID to display: ";
+cin >> id;
+cin.ignore();
+auto it = employeeMap.find(id);
+if (it == employeeMap.end()) {
+cout << "Employee with ID " << id << " does not exist." << endl;
+return;
+}
+const Employee &emp = it->second;
+cout << "\nEmployee Details:" << endl;
+cout << "Employee ID: " << emp.empID << endl;
+cout << "Name: " << emp.name << endl;
+cout << "Designation: " << emp.designation << endl;
+cout << "Salary: " << emp.salary << endl;
+}
+##################################################################################################################################################################
