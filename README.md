@@ -1,62 +1,125 @@
 # DSAL-PR-codes
 ######################################## Data Structures and Algorithms Laboratory (DSAL) ########################################
 /**
-1. Consider a telephone book database with N clients. Implement a hash table to quickly look up a client's telephone number, using two collision handling techniques and compare them based on the number of comparisons required to find a set of telephone numbers. (Telephone Book Database) 
+1. Consider a telephone book database with N clients. Implement a hash table to quickly look up a client's telephone number, using two ollision handling techniques and compare them based on the number of comparisons required to find a set of telephone numbers. (Telephone Book Database) 
 CODE:
 **/
 ########################################
-class HashTable:
-    def __init__(self, size):
-        self.size = size
-        self.table = [[] for _ in range(size)]
+class TelephoneBook:
+    def __init__(self, name, tel_no):
+        self.name = name
+        self.tel_no = tel_no
 
-    def hash_function(self, key):
-        return hash(key) % self.size
+def insertion_quadratic_probing():
+    hashtable = [None] * 10
+    num_records = int(input("\nEnter number of records: "))
+    for _ in range(num_records):
+        n = input("Enter name: ")
+        t = int(input("Enter telephone no.: "))
+        hashValue = t % 10
+        i = 1
+        while hashtable[hashValue] is not None:
+            hashValue = (hashValue + i * i) % 10
+            i += 1
+        hashtable[hashValue] = TelephoneBook(n, t)
+    return hashtable
 
-    def insert_chaining(self, key, value):
-        index = self.hash_function(key)
-        for pair in self.table[index]:
-            if pair[0] == key:
-                pair[1] = value
-                return
-        self.table[index].append([key, value])
+def insertion_double_hashing():
+    hashtable = [None] * 10
+    num_records = int(input("\nEnter number of records: "))
+    for _ in range(num_records):
+        n = input("Enter name: ")
+        t = int(input("Enter telephone no.: "))
+        h1 = t % 10
+        h2 = 7 - (t % 7)
+        hashValue = h1
+        i = 1
+        while hashtable[hashValue] is not None:
+            hashValue = (h1 + i * h2) % 10
+            i += 1
+        hashtable[hashValue] = TelephoneBook(n, t)
+    return hashtable
 
-    def lookup_chaining(self, key):
-        index = self.hash_function(key)
-        for pair in self.table[index]:
-            if pair[0] == key:
-                return pair[1]
-        return None
+def display(hashtable):
+    print("-------------------------------")
+    print("Index\tName\tTelephone No.")
+    print("-------------------------------")
+    for idx, obj in enumerate(hashtable):
+        if obj is None:
+            print(f"{idx}\t-\t-")
+        else:
+            print(f"{idx}\t{obj.name}\t{obj.tel_no}")
+    print("-------------------------------")
 
-    def insert_open_addressing(self, key, value):
-        index = self.hash_function(key)
-        while True:
-            if not self.table[index]:
-                self.table[index] = [key, value]
-                return
-            if self.table[index][0] == key:
-                self.table[index][1] = value
-                return
-            index = (index + 1) % self.size
+def search(hashtable, name):
+    comparisons = 0
+    for obj in hashtable:
+        comparisons += 1
+        if obj is not None and obj.name == name:
+            return True, comparisons
+    return False, comparisons
 
-    def lookup_open_addressing(self, key):
-        index = self.hash_function(key)
-        while True:
-            if not self.table[index]:
-                return None
-            if self.table[index][0] == key:
-                return self.table[index][1]
-            index = (index + 1) % self.size
+def main():
+    hash_qp = [None] * 10
+    hash_dh = [None] * 10
 
-hash_table = HashTable(10)
-hash_table.insert_chaining("John", "1234567890")
-hash_table.insert_chaining("Alice", "9876543210")
-print(hash_table.lookup_chaining("John"))
-print(hash_table.lookup_chaining("Alice"))
-hash_table.insert_open_addressing("Bob", "5555555555")
-hash_table.insert_open_addressing("Charlie", "6666666666")
-print(hash_table.lookup_open_addressing("Bob"))
-print(hash_table.lookup_open_addressing("Charlie"))
+    while True:
+        print("\n-------------------------------")
+        print("\t1. Insert")
+        print("\t2. Display")
+        print("\t3. Search and Compare")
+        print("\t4. Exit")
+        print("-------------------------------")
+        choice = int(input("Enter choice: "))
+
+        if choice == 1:
+            print("\nSelect collision method-")
+            print("\t1. Quadratic Probing")
+            print("\t2. Double Hashing")
+            method = int(input("Enter choice: "))
+            if method == 1:
+                hash_qp = insertion_quadratic_probing()
+            elif method == 2:
+                hash_dh = insertion_double_hashing()
+            else:
+                print("Invalid method.")
+
+        elif choice == 2:
+            print("\nSelect table to display-")
+            print("\t1. Quadratic Probing Table")
+            print("\t2. Double Hashing Table")
+            method = int(input("Enter choice: "))
+            if method == 1:
+                display(hash_qp)
+            elif method == 2:
+                display(hash_dh)
+
+        elif choice == 3:
+            name = input("Enter name to search: ")
+            found_qp, comp_qp = search(hash_qp, name)
+            found_dh, comp_dh = search(hash_dh, name)
+
+            if found_qp:
+                print(f"\nFound in Quadratic Probing in {comp_qp} comparisons.")
+            else:
+                print(f"\nNot found in Quadratic Probing ({comp_qp} comparisons).")
+
+            if found_dh:
+                print(f"Found in Double Hashing in {comp_dh} comparisons.")
+            else:
+                print(f"Not found in Double Hashing ({comp_dh} comparisons).")
+
+        elif choice == 4:
+            break
+        else:
+            print("Invalid choice!")
+
+if __name__ == "__main__":
+    main()
+
+
+
+
 
 ########################################
 /**
@@ -72,82 +135,139 @@ class Node:
         self.next = None
 
 class HashTable:
-    def __init__(self, size, replace=False):
+    def __init__(self, size=10):
         self.size = size
-        self.table = [None] * size
-        self.replace = replace
+        self.table = [None] * self.size
 
-    def hash_function(self, key):
+    def _hash(self, key):
         return hash(key) % self.size
 
-    def insert(self, key, value):
-        index = self.hash_function(key)
+    # Insert without replacement (simple chaining)
+    def insert_without_replacement(self, key, value):
+        index = self._hash(key)
+        new_node = Node(key, value)
         if self.table[index] is None:
-            self.table[index] = Node(key, value)
+            self.table[index] = new_node
         else:
-            node = self.table[index]
-            while node.next is not None:
-                if node.key == key:
-                    if self.replace:
-                        node.value = value
-                        return
-                node = node.next
-            if node.key == key:
-                if self.replace:
-                    node.value = value
-            else:
-                node.next = Node(key, value)
+            current = self.table[index]
+            while current:
+                if current.key == key:
+                    current.value = value  # Update if key exists
+                    return
+                if current.next is None:
+                    break
+                current = current.next
+            current.next = new_node  # Add to end of chain
 
+    # Insert with replacement
+    def insert_with_replacement(self, key, value):
+        index = self._hash(key)
+        new_node = Node(key, value)
+        if self.table[index] is None:
+            self.table[index] = new_node
+        else:
+            existing_node = self.table[index]
+            existing_index = self._hash(existing_node.key)
+            if existing_index == index:
+                # Existing node is correctly placed: chain normally
+                current = existing_node
+                while current:
+                    if current.key == key:
+                        current.value = value
+                        return
+                    if current.next is None:
+                        break
+                    current = current.next
+                current.next = new_node
+            else:
+                # Existing node is wrongly placed: replace
+                self.table[index] = new_node
+                new_node.next = existing_node
+
+    # Common methods
     def find(self, key):
-        index = self.hash_function(key)
-        node = self.table[index]
-        while node is not None:
-            if node.key == key:
-                return node.value
-            node = node.next
+        index = self._hash(key)
+        current = self.table[index]
+        while current:
+            if current.key == key:
+                return current.value
+            current = current.next
         return None
 
     def delete(self, key):
-        index = self.hash_function(key)
-        node = self.table[index]
+        index = self._hash(key)
+        current = self.table[index]
         prev = None
-        while node is not None:
-            if node.key == key:
+        while current:
+            if current.key == key:
                 if prev is None:
-                    self.table[index] = node.next
+                    self.table[index] = current.next
                 else:
-                    prev.next = node.next
-                return
-            prev = node
-            node = node.next
+                    prev.next = current.next
+                return True
+            prev = current
+            current = current.next
+        return False
 
     def display(self):
-        for index, node in enumerate(self.table):
-            print(f"Index {index}: ", end="")
-            while node is not None:
-                print(f"({node.key}, {node.value}) -> ", end="")
-                node = node.next
-            print("None")
+        for i in range(self.size):
+            print(f"Index {i}:", end=" ")
+            current = self.table[i]
+            if current is None:
+                print("Empty")
+            else:
+                while current:
+                    print(f"({current.key}: {current.value})", end=" -> ")
+                    current = current.next
+                print()
 
-hash_table = HashTable(10, replace=True)
-hash_table.insert("apple", 5)
-hash_table.insert("banana", 7)
-hash_table.insert("orange", 3)
-hash_table.insert("apple", 10)
-hash_table.display()
-print(hash_table.find("apple"))
-hash_table.delete("banana")
-hash_table.display()
-hash_table_without_replacement = HashTable(10, replace=False)
-hash_table_without_replacement.insert("apple", 5)
-hash_table_without_replacement.insert("banana", 7)
-hash_table_without_replacement.insert("orange", 3)
-hash_table_without_replacement.insert("apple", 10)
-hash_table_without_replacement.display()
-print(hash_table_without_replacement.find("apple"))
-hash_table_without_replacement.delete("banana")
-hash_table_without_replacement.display()
-#################################################
+def main():
+    hash_table = HashTable()
+    print("Choose insertion method:")
+    print("1. Without Replacement (Simple chaining)")
+    print("2. With Replacement (Replace wrongly placed nodes)")
+    method_choice = int(input("Enter 1 or 2: "))
+
+    while True:
+        print("\nDictionary Operations:")
+        print("1. Insert (key, value)")
+        print("2. Find (key)")
+        print("3. Delete (key)")
+        print("4. Display")
+        print("5. Exit")
+        choice = int(input("Enter your choice: "))
+
+        if choice == 1:
+            key = input("Enter key: ")
+            value = input("Enter value: ")
+            if method_choice == 1:
+                hash_table.insert_without_replacement(key, value)
+            else:
+                hash_table.insert_with_replacement(key, value)
+            print("Inserted successfully.")
+        elif choice == 2:
+            key = input("Enter key to find: ")
+            result = hash_table.find(key)
+            if result is None:
+                print("Key not found.")
+            else:
+                print(f"Value for key '{key}': {result}")
+        elif choice == 3:
+            key = input("Enter key to delete: ")
+            if hash_table.delete(key):
+                print(f"Key '{key}' deleted successfully.")
+            else:
+                print(f"Key '{key}' not found.")
+        elif choice == 4:
+            hash_table.display()
+        elif choice == 5:
+            print("Exiting...")
+            break
+        else:
+            print("Invalid choice. Please try again.")
+
+if __name__ == "__main__":
+    main()
 
 /**
 3. Construct a tree to represent a book with chapters, sections, and subsections. Print the nodes and analyze the time and space requirements of the method.
